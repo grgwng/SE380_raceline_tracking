@@ -51,6 +51,25 @@ class RaceTrack:
         self.mpl_centerline_patch = patches.PathPatch(self.mpl_centerline, linestyle="-", fill=False, lw=0.3)
         self.mpl_right_track_limit_patch = patches.PathPatch(self.mpl_right_track_limit, linestyle="--", fill=False, lw=0.2)
         self.mpl_left_track_limit_patch = patches.PathPatch(self.mpl_left_track_limit, linestyle="--", fill=False, lw=0.2)
+        
+        # Precompute curvatures for all centerline points
+        self.curvatures = self._precompute_curvatures()
+    
+    def _precompute_curvatures(self):
+        """Precompute curvature at each centerline point."""
+        from controller import curvature_from_three_points
+        
+        N = len(self.centerline)
+        curvatures = np.zeros(N)
+        
+        for i in range(N):
+            curvatures[i] = curvature_from_three_points(
+                self.centerline[i % N],
+                self.centerline[(i + 1) % N],
+                self.centerline[(i + 2) % N]
+            )
+        
+        return curvatures
 
     def plot_track(self, axis : axes.Axes):
         axis.add_patch(self.mpl_centerline_patch)
